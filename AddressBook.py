@@ -13,6 +13,7 @@ __date__ = "19 Oct' 2015"
 first_name_cache = []
 name_index_cache = OrderedDict()
 name_index_sorted_cache = OrderedDict()
+field_cache = OrderedDict()
 
 #end
 
@@ -22,22 +23,25 @@ def build_cache(verbose = False):
     global first_name_cache
     global name_index_cache
     global name_index_sorted_cache
+    global field_cache
     count = 0
 
     first_name_cache[:] = []
     name_index_cache.clear()
     name_index_sorted_cache.clear()
+    field_cache.clear()
 
     try:
         read_file_object = open('contacts.ab', 'r')
         for line in read_file_object:
-            count += count
+            count += 1
             temp_split_list = line.split('|')
             temp_split_field_list = temp_split_list[0].split('@')
             first_name_cache.append(temp_split_field_list[1])
             name_index_cache[temp_split_field_list[1]] = count
         read_file_object.close()
-        #sort the index cache
+        sort_index_cache()
+        field_cache = get_fields()
     except IOError:
         if verbose:
             print 'Contact database not found'
@@ -48,7 +52,7 @@ def sort_index_cache():
     global name_index_cache
     global name_index_sorted_cache
 
-    name_index_sorted_cache = sorted(name_index_cache.items(), key = lambda t: t[0])
+    name_index_sorted_cache = sorted(name_index_cache.items(), key=lambda t: t[0])
 
 def input_line_spliter(input_line):
     temp_dict = OrderedDict()
@@ -68,7 +72,10 @@ def get_fields():
     except IOError:
         return input_line_spliter('first@First Name|second@Second Name|phone@Phone Number|address@Address')
 
-def print_line(input_line, number = 0):
+def line_from_name():
+    pass
+
+def print_line(input_line, number = 0, format = 'null'):
     temp_dict = input_line_spliter(input_line)
     fields_dict = get_fields()
     fields_print = []
@@ -77,19 +84,33 @@ def print_line(input_line, number = 0):
         fields_core.append(key)
         fields_print.append(value)
 
-    if number == 0:
+    custom_field_list = format.split(',')
+
+    if number == 0 and format == 'null':
         for counter in range(0, len(fields_dict)):
             print '{:^14}'.format(fields_print[counter]),
         else:
             print
-
-    for size in range(0, len(fields_core)):
-        if fields_core[size] in temp_dict:
-            print '{:^14}'.format(temp_dict[fields_core[size]]),
+    elif not format == 'null' and number == 0:
+        for counter in range(0, len(custom_field_list)):
+            print '{:^14}'.format(field_cache[custom_field_list[counter]]),
         else:
-            print '{:^14}'.format(''),
+            print
+
+    if format == 'null':
+        for size in range(0, len(fields_core)):
+            if fields_core[size] in temp_dict:
+                print '{:^14}'.format(temp_dict[fields_core[size]]),
+            else:
+                print '{:^14}'.format(''),
+        else:
+            print
     else:
-        print
+        for size in range(0, len(custom_field_list)):
+            if custom_field_list[size] in temp_dict:
+                print '{:^14}'.format(temp_dict[custom_field_list[size]]),
+        else:
+            print
     #for line in temp_dict.items():
     #    print
 
@@ -131,20 +152,39 @@ def new_contact():
     write_file_object.close()
     build_cache()
 
-    #print input_line
-
-
-def read_contacts():
+def print_all_contacts(format = 'default'):
     count = 0
     try:
         read_file_object = open('contacts.ab', 'r')
         for line in read_file_object:
-            print_line(line, count)
+            if format == 'default':
+                print_line(line, count)
+            else:
+                print_line(line, count, format)
             count += 1
         read_file_object.close()
     except IOError:
         print 'Contact DB not found'
 
+def print_first_contact_name():
+    global first_name_cache
+    serial = 1
+    print 'Listing all contacts'
+    for item in first_name_cache:
+        print '\t{}. '.format(serial),
+        print item
+        serial += 1
+
+def print_ordered_all_contacts(format = 'default'):
+    global name_index_sorted_cache
+    count = 0
+    for key, value in name_index_sorted_cache:
+        line = linecache.getline('contacts.ab', value)
+        if format == 'default':
+            print_line(line, count)
+        else:
+            print_line(line, count, format)
+        count += 1
 
 #end
 
@@ -163,14 +203,54 @@ while run:
     elif not command:
         pass
 
-    elif command == 'print':
-        read_contacts()
+    elif command == 'new' or command == 'new ':
+        new_contact()
+
+    elif command.startswith('print'):
+        if command == 'print ' or command == 'print':
+            print_first_contact_name()
+
+        elif command.startswith('print -l'):
+            command_split = command.split(' ')
+            if len(command_split) == 2:
+                print_all_contacts()
+            else:
+                format = command_split[2]
+                check_field_list = format.split(',')
+                if set(check_field_list) < set(field_cache.keys()):
+                    print_all_contacts(format)
+                else:
+                    print "Invalid field format. Run 'help' for assistance."
+
+        elif command.startswith('print -o'):
+            command_split = command.split(' ')
+            if len(command_split) == 2:
+                print_ordered_all_contacts()
+            else:
+                format = command_split[2]
+                check_field_list = format.split(',')
+                if set(check_field_list) < set(field_cache.keys()):
+                    print_ordered_all_contacts(format)
+                else:
+                    print "Invalid field format. Run 'help' for assistance."
+
+        else:
+            print "Unrecognized parameter for 'print'"
+
+    elif command == 'refresh ' or command == 'refresh':
+        build_cache(True)
 
     elif command == 'test':
-        #print_line('first@Sanchit|second@Samuel|phone@123456|address@23 Railway')
-        #new_field()
-        #read_contacts()
-        new_contact()
+        # print_line('first@Sanchit|second@Samuel|phone@123456|address@23 Railway')
+        # new_field()
+        # read_contacts()
+        pass
+
+    elif command == 'license':
+        read_file_object = open('LICENSE', 'r')
+        license = read_file_object.read()
+        print license
+        read_file_object.close()
 
 
     else:
