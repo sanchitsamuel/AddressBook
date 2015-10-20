@@ -12,7 +12,7 @@ __date__ = "19 Oct' 2015"
 
 first_name_cache = []
 name_index_cache = OrderedDict()
-name_index_sorted_cache = OrderedDict()
+name_index_sorted_cache = []
 field_cache = OrderedDict()
 
 #end
@@ -28,7 +28,7 @@ def build_cache(verbose = False):
 
     first_name_cache[:] = []
     name_index_cache.clear()
-    name_index_sorted_cache.clear()
+    name_index_sorted_cache[:] = []
     field_cache.clear()
 
     try:
@@ -72,8 +72,15 @@ def get_fields():
     except IOError:
         return input_line_spliter('first@First Name|second@Second Name|phone@Phone Number|address@Address')
 
-def line_from_name():
-    pass
+def line_from_name(name, format = 'default'):
+    global name_index_cache
+    if name in name_index_cache:
+        index = name_index_cache[name]
+        line = linecache.getline('contacts.ab', int(index))
+        if format == 'default':
+            print_line(line)
+    else:
+        print 'No contact by the name {} found in the database'.format(name)
 
 def print_line(input_line, number = 0, format = 'null'):
     temp_dict = input_line_spliter(input_line)
@@ -128,6 +135,7 @@ def new_field():
         current += print_name
         write_file_object.write(current)
         write_file_object.close()
+        build_cache()
     except IOError:
         print 'No field config found. Create default(yes or no)? '
 
@@ -233,6 +241,13 @@ while run:
                     print_ordered_all_contacts(format)
                 else:
                     print "Invalid field format. Run 'help' for assistance."
+
+        elif command.startswith('print -s'):
+            command_split = command.split(' ')
+            if len(command_split) == 2:
+                print "Invalid entry. Run 'help' for assistance."
+            else:
+                line_from_name(command_split[2])
 
         else:
             print "Unrecognized parameter for 'print'"
