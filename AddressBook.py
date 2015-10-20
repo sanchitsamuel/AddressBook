@@ -127,12 +127,12 @@ def new_field():
         current = read_file_object.readline()
         read_file_object.close()
         write_file_object = open('category', 'w')
-        current += '|'
         core_name = str(raw_input('Enter the core name: '))
         current += core_name
         current += '@'
         print_name = str(raw_input('Enter visible name: '))
         current += print_name
+        current += '|'
         write_file_object.write(current)
         write_file_object.close()
         build_cache()
@@ -154,10 +154,15 @@ def new_contact():
         input_line += str(raw_input('\tEnter {}: '.format(fields_print[size])))
         input_line += '|'
     input_line += '\n'
+    try:
+        write_file_object = open('contacts.ab', 'a')
+        write_file_object.writelines(input_line)
+        write_file_object.close()
+    except IOError:
+        write_file_object = open('contacts.ab', 'w')
+        write_file_object.writelines(input_line)
+        write_file_object.close()
 
-    write_file_object = open('contacts.ab', 'a')
-    write_file_object.writelines(input_line)
-    write_file_object.close()
     build_cache()
 
 def print_all_contacts(format = 'default'):
@@ -257,9 +262,15 @@ while run:
 
     elif command == 'test':
         # print_line('first@Sanchit|second@Samuel|phone@123456|address@23 Railway')
-        # new_field()
+        new_field()
         # read_contacts()
-        pass
+        #pass
+
+    elif command == 'about' or command == 'about ':
+        print '''Address book, {} {}
+  In development since, {}
+  Written by {} <{}>
+  Licenced under {}'''.format(__version__, __status__, __date__, __author__, __email__, __license__)
 
     elif command == 'license':
         read_file_object = open('LICENSE', 'r')
