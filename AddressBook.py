@@ -8,16 +8,16 @@ __status__ = "beta"
 __version__ = "2.0.0"
 __date__ = "19 Oct' 2015"
 
-#global start
+# global start
 
 first_name_cache = []
 name_index_cache = OrderedDict()
 name_index_sorted_cache = []
 field_cache = OrderedDict()
 
-#end
+# end
 
-#fuction start
+# function start
 
 def build_cache(verbose = False):
     global first_name_cache
@@ -199,7 +199,24 @@ def print_ordered_all_contacts(format = 'default'):
             print_line(line, count, format)
         count += 1
 
-#end
+def print_help():
+    print \
+    '''usage: command [option] required_input
+|---command: 'print': prints the first name of all contacts in the order added
+|   options:
+|     -l   : prints all the fields of all the contacts in the order added
+|     -l []: prints all the contacts with the specified field format in the order added
+|     -o   : prints all the fields of all the contacts in the lexical order
+|     -o []: prints all the contacts with the specified field format in the lexical order
+|     -s []: searches and prints the contact info of the input name
+|---command: 'new': creates a new contact entry
+|---command: 'field': lists all the fields with their core names to their visible names
+|     -n   : adds new field to the database
+|---command: 'refresh': refreshes the cache, you don't really need to use this, but if the app displays
+|            old or deleted data then this might help
+|---command: 'about': displays information about the software, version authors and other stuff'''
+
+# end
 
 run = True
 build_cache(False)
@@ -264,7 +281,9 @@ while run:
         # print_line('first@Sanchit|second@Samuel|phone@123456|address@23 Railway')
         new_field()
         # read_contacts()
-        #pass
+
+    elif command == 'help' or command == 'help ':
+        print_help()
 
     elif command == 'about' or command == 'about ':
         print '''Address book, {} {}
