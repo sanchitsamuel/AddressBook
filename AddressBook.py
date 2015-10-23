@@ -1,5 +1,7 @@
 from collections import OrderedDict
 import linecache
+import time
+import os
 
 __author__ = 'Sanchit Samuel'
 __license__ = "GPL v2"
@@ -42,6 +44,7 @@ def build_cache(verbose = False):
         read_file_object.close()
         sort_index_cache()
         field_cache = get_fields()
+        linecache.updatecache('contacts.ab')
     except IOError:
         if verbose:
             print 'Contact database not found'
@@ -70,7 +73,7 @@ def get_fields():
         fields_dict = input_line_spliter(fields)
         return fields_dict
     except IOError:
-        return input_line_spliter('first@First Name|second@Second Name|phone@Phone Number|address@Address')
+        return input_line_spliter('first@First Name|second@Second Name|phone@Phone Number|address@Address|')
 
 def line_from_name(name, format = 'default'):
     global name_index_cache
@@ -199,9 +202,41 @@ def print_ordered_all_contacts(format = 'default'):
             print_line(line, count, format)
         count += 1
 
+def edit_contact(name):
+    if name in name_index_cache:
+        read_file_object = open('contacts.ab', 'r')
+        all_contact_lines = read_file_object.readlines()
+        read_file_object.close()
+        contact_line = all_contact_lines[name_index_cache[name] - 1]
+        contact_field_list = contact_line.split('|')
+        fields_core = []
+        fields_print = []
+        fields_dict = get_fields()
+        for key, value in fields_dict.items():
+            fields_core.append(key)
+            fields_print.append(value)
+        new_line = ''
+        for counter in range(0, len(fields_print)):
+            new_line += fields_core[counter]
+            new_line += '@'
+            new_line += str(raw_input("Edit '{}', current '{}': ".format(fields_print[counter], contact_field_list[counter])))
+            new_line += '|'
+        else:
+            new_line += '\n'
+
+        all_contact_lines[name_index_cache[name] - 1] = new_line
+
+        write_file_object = open('contacts.ab', 'w')
+        write_file_object.writelines(all_contact_lines)
+        write_file_object.close()
+        build_cache()
+
+    else:
+        print "No contact found with the name '{}'".format(name)
+
 def print_help():
     print \
-    '''usage: command [option] required_input
+    '''usage: command -option [required_input]
 |---command: 'print': prints the first name of all contacts in the order added
 |   options:
 |     -l   : prints all the fields of all the contacts in the order added
@@ -269,10 +304,21 @@ while run:
             if len(command_split) == 2:
                 print "Invalid entry. Run 'help' for assistance."
             else:
+                start_time = time.time()
                 line_from_name(command_split[2])
+                print '\nTime taken {}s'.format(time.time() - start_time)
 
         else:
             print "Unrecognized parameter for 'print'"
+
+    elif command.startswith('edit'):
+        command_split = command.split(' ')
+        if len(command_split) == 1:
+            print "Invalid entry. Run 'help' for assistance."
+        else:
+            start_time = time.time()
+            edit_contact(command_split[1])
+            print '\nTime taken {}s'.format(time.time() - start_time)
 
     elif command == 'refresh ' or command == 'refresh':
         build_cache(True)
@@ -281,6 +327,8 @@ while run:
         # print_line('first@Sanchit|second@Samuel|phone@123456|address@23 Railway')
         new_field()
         # read_contacts()
+    elif command == 'clear' or command == 'clear ':
+        os.system('cls')
 
     elif command == 'help' or command == 'help ':
         print_help()
@@ -296,7 +344,6 @@ while run:
         license = read_file_object.read()
         print license
         read_file_object.close()
-
 
     else:
         print 'Unrecognized command'
