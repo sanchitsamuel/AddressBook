@@ -121,8 +121,6 @@ def print_line(input_line, number = 0, format = 'null'):
                 print '{:^14}'.format(temp_dict[custom_field_list[size]]),
         else:
             print
-    #for line in temp_dict.items():
-    #    print
 
 def new_field():
     try:
@@ -246,6 +244,7 @@ def print_help():
 |     -s []: searches and prints the contact info of the input name
 |---command: 'new': creates a new contact entry
 |---command: 'field': lists all the fields with their core names to their visible names
+|   options:
 |     -n   : adds new field to the database
 |---command: 'refresh': refreshes the cache, you don't really need to use this, but if the app displays
 |            old or deleted data then this might help
@@ -320,12 +319,22 @@ while run:
             edit_contact(command_split[1])
             print '\nTime taken {}s'.format(time.time() - start_time)
 
+    elif command.startswith('fields'):
+        if command == 'fields' or command == 'fields ':
+            fields_dict = get_fields()
+            for key, value in fields_dict.items():
+                print '{:^15} for {:^15}'.format(key, value)
+        else:
+            command == 'fields -n' or command == 'fields -n ':
+            new_field()
+
     elif command == 'refresh ' or command == 'refresh':
         build_cache(True)
 
     elif command == 'test':
+        pass
         # print_line('first@Sanchit|second@Samuel|phone@123456|address@23 Railway')
-        new_field()
+        # new_field()
         # read_contacts()
     elif command == 'clear' or command == 'clear ':
         os.system('cls')
