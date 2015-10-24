@@ -325,8 +325,8 @@ while run:
             for key, value in fields_dict.items():
                 print '{:^15} for {:^15}'.format(key, value)
         else:
-            command == 'fields -n' or command == 'fields -n ':
-            new_field()
+            if command == 'fields -n' or command == 'fields -n ':
+                new_field()
 
     elif command == 'refresh ' or command == 'refresh':
         build_cache(True)
