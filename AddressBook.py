@@ -232,6 +232,19 @@ def edit_contact(name):
     else:
         print "No contact found with the name '{}'".format(name)
 
+def delete_contact(name):
+    if name in name_index_cache:
+        read_file_object = open('contacts.ab', 'r')
+        all_contact_lines = read_file_object.readlines()
+        read_file_object.close()
+        del all_contact_lines[name_index_cache[name] - 1]
+        write_file_object = open('contacts.ab', 'w')
+        write_file_object.writelines(all_contact_lines)
+        write_file_object.close()
+        build_cache()
+    else:
+        print "No contact found with the name '{}'".format(name)
+
 def print_help():
     print \
     '''usage: command -option [required_input]
@@ -243,6 +256,8 @@ def print_help():
 |     -o []: prints all the contacts with the specified field format in the lexical order
 |     -s []: searches and prints the contact info of the input name
 |---command: 'new': creates a new contact entry
+|---command: 'edit []': edits the given contact
+|---command: 'delete []': deletes the given contact
 |---command: 'field': lists all the fields with their core names to their visible names
 |   options:
 |     -n   : adds new field to the database
@@ -319,6 +334,15 @@ while run:
             edit_contact(command_split[1])
             print '\nTime taken {}s'.format(time.time() - start_time)
 
+    elif command.startswith('delete') or command.startswith('del'):
+        command_split = command.split(' ')
+        if len(command_split) == 1:
+            print "Invalid entry. Run 'help' for assistance."
+        else:
+            start_time = time.time()
+            delete_contact(command_split[1])
+            print '\nTime taken {}s'.format(time.time() - start_time)
+
     elif command.startswith('fields'):
         if command == 'fields' or command == 'fields ':
             fields_dict = get_fields()
@@ -326,7 +350,7 @@ while run:
                 print '{:^15} for {:^15}'.format(key, value)
         else:
             if command == 'fields -n' or command == 'fields -n ':
-                new_field()
+                xnew_field()
 
     elif command == 'refresh ' or command == 'refresh':
         build_cache(True)
