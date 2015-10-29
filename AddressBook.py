@@ -271,6 +271,9 @@ run = True
 build_cache(False)
 
 print 'Welcome to Address Book \nversion {} {}'.format(__version__, __status__)
+if __status__ == 'beta':
+    print '\tThe program is still in beta, please look in the issue list before using at, \n ' \
+          '\thttps://github.com/sanchitsamuel/AddressBook/issues'
 
 while run:
     command = str(raw_input('cmd > '))
